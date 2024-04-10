@@ -1,0 +1,90 @@
+:root {
+    --padding-size: ;
+    --board-size: ;
+    --tile-size: ;
+    --hand-width: ;
+    --border-width: 2px;
+    --font-size: ;
+}
+
+body {
+    background-color: black;
+    padding-right: var(--padding-size);
+    padding-left: var(--padding-size);
+}
+
+#mate {
+    background-color: white;
+
+    display: block;
+    width: auto;
+    height: 40px;
+
+    margin-bottom: 5px;
+
+    border-radius: 15px;
+
+    text-align: center;
+    line-height: 40px;
+    font-size: 20px;
+}
+
+#board {
+    background-color: white;
+
+    display: block;
+    width: 100%;
+    padding-bottom: 100%;
+
+    font-size: var(--font-size);
+    font-weight: bold;
+    text-align: center;
+    line-height: var(--tile-size);
+}
+
+.tile {
+    background-color: #ffa55b;;
+    border: solid rgb(0, 0, 99);
+    border-width: var(--border-width);
+
+    display: block;
+    float: left;
+    width: var(--tile-size);
+    height: var(--tile-size);
+}
+
+.hand {
+    background-color: #ffa55b;
+    border: solid rgb(0, 0, 99);
+    border-width: var(--border-width);
+
+    position: absolute;
+
+    display: block;
+    width: var(--hand-width);
+    height: 80%; 
+
+    font-size: var(--font-size);
+    font-weight: bold;
+    text-align: center;
+}
+
+#hand0 {
+    top: 0;
+    left: 0;
+}
+
+#hand1 {
+    bottom: 0;
+    right: 0;
+}
+
+.handspace {
+    display: block;
+
+    position: relative;
+
+    height: var(--tile-size);
+    width: auto;
+}
+
