@@ -18,7 +18,12 @@ const multi = (num1, num2) => num1 * num2;
 
 const dimension = offset => (num1, num2) => (num1 / num2) - offset;
 
-const getScreenSize = () => (window.innerWidth > 0) ? window.innerWidth : screen.width;
+const getScreenSize = () => {
+    if (window.innerWidth > 0) {
+        return (window.innerWidth <= window.innerHeight) ? window.innerWidth : window.innerHeight;
+    }
+    return (screen.width <= screen.height) ? screen.width : screen.height;
+}
 
 //--------------------------------------------
 
@@ -33,11 +38,11 @@ const SetRootVar = () => {
     const paddingSize = operatePX(screenSize)(multi)(0.15);
     root.style.setProperty("--padding-size", paddingSize);
 
-    const boardSize = operatePX(screenSize)(multi)(0.7);
+    const boardSize = operatePX(screenSize)(multi)(0.65);
     root.style.setProperty("--board-size", boardSize);
 
     const tileBorderSize = getComputedStyle(root).getPropertyValue("--border-width");
-    const tileSize = operatePX(boardSize)(dimension(2 * PxToNumber(tileBorderSize)))(BOARD_NUM);
+    const tileSize = operatePX(boardSize)(dimension(2.1 * PxToNumber(tileBorderSize)))(BOARD_NUM);
     root.style.setProperty("--tile-size", tileSize);
 
     const handWidth = operatePX(tileSize)(multi)(BOARD_NUM - 1);
@@ -66,3 +71,7 @@ const CreateTiles = () => {
 const Create = () => {
     CreateTiles();
 }
+
+window.addEventListener("resize", function(event){
+    SetRootVar();
+});
