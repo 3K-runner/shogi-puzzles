@@ -13,6 +13,10 @@ body {
     padding-left: var(--padding-size);
 }
 
+#frame {
+    width: var(--board-size);
+}
+
 #mate {
     background-color: white;
 
@@ -30,11 +34,12 @@ body {
 }
 
 #board {
-    background-color: white;
+    background-color: black;
 
     display: block;
-    width: 100%;
-    padding-bottom: 100%;
+    width: var(--board-size);
+    height: var(--board-size);
+    padding-bottom: 0;
 
     font-size: var(--font-size);
     font-weight: bold;
@@ -87,4 +92,3 @@ body {
     height: var(--tile-size);
     width: auto;
 }
-
