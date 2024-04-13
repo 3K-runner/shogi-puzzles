@@ -5,6 +5,8 @@
     --hand-width: ;
     --border-width: 2px;
     --font-size: ;
+
+    --frame-margin: 0;
 }
 
 body {
@@ -15,6 +17,7 @@ body {
 
 #frame {
     width: var(--board-size);
+    margin: var(--h-centralized);
 }
 
 #mate {
@@ -91,4 +94,12 @@ body {
 
     height: var(--tile-size);
     width: auto;
+}
+
+#input-str {
+    border-radius: 5px;
+
+    margin-top: 10px;
+    height: 30px;
+    width: 100%;
 }
