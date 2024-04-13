@@ -1,20 +1,26 @@
 const Kanji = num => {
     switch (num) {
-    case 9:  return [" ", "歩", "香", "桂", "銀", "金", "角", "飛", "王"];
-    case 5:  return [" ", "歩", "銀", "金", "角", "飛", "王"];
+    case 9:  return [[" ", " "], 
+                     ["歩", "と"], 
+                     ["香", "杏"], 
+                     ["桂", "圭"], 
+                     ["銀", "全"], 
+                     ["金", "金"], 
+                     ["角", "馬"], 
+                     ["飛", "竜"], 
+                     ["王", "玉"]];
+    case 5:  return [[" ", " "], 
+                     ["歩", "と"], 
+                     ["銀", "全"], 
+                     ["金", "金"], 
+                     ["角", "馬"], 
+                     ["飛", "竜"], 
+                     ["王", "玉"]];
     default: return [];
     };
 };
 
-const proKanji = num => {
-    switch (num) {
-    case 9:  return [" ", "と", "杏", "圭", "全", "金", "馬", "竜", "王"];
-    case 5:  return [" ", "と", "全", "金", "馬", "竜", "王"];
-    default: return [];
-    };
-};
-
-const pieces = [Kanji(BOARD_NUM), proKanji(BOARD_NUM)];
+const pieces = Kanji(BOARD_NUM);
 
 const makeTab = () => {
     let std_tab_var = [];
@@ -53,7 +59,8 @@ const FillBoard = boardToUse => {
             const piece = boardToUse.tab[i][j];
             let tile = document.getElementById(tileId(i, j) + "t");
             
-            tile.textContent = pieces[piece[2]][piece[0]];
+            const turn_or_pro = (piece[0] == (pieces.length - 1)) ? 1 : 2;
+            tile.textContent = pieces[piece[0]][piece[turn_or_pro]];
             if (piece[0] == 0) continue;
             
             tile.style.transform = (piece[1] == 0) ? "rotate(180deg)" : "" ;
@@ -68,10 +75,10 @@ const FillHand = boardToUse => {
     for (let i = 0; i < 2; i++) {
         let handstr = "";
         if (boardToUse.hand[i][0] != 0) {
-            for  (let j = 1; j < pieces[0].length - 1; j++) {
+            for (let j = 1; j < pieces.length - 1; j++) {
                 let numhand = boardToUse.hand[i][j];
                 if (numhand == 0) continue;
-                handstr = handstr + numhand.toString() + pieces[0][j] + " ";
+                handstr = handstr + numhand.toString() + pieces[j][0] + " ";
             }
         }
 
@@ -80,7 +87,7 @@ const FillHand = boardToUse => {
 }
 
 const setMate = (turn, mate) => {
-    const player = (turn == 0) ? "Sente" : "Gote";
+    const player = (turn == 0) ? "Gote" : "Sente";
     const mateMessage = "Mate in " + mate.toString() + ": " + player + " to win";
     document.getElementById("mate").textContent = mateMessage;
 }
@@ -108,7 +115,7 @@ const setBoard = boardstr => board => {
     for (let i = 0; i < 2; i++) {
         if (boardTxt.Read() == 0) continue;
         board.hand[i][0] = 1;
-        for (let j = 1; j < pieces[0].length - 1; j++) {
+        for (let j = 1; j < pieces.length - 1; j++) {
             board.hand[i][j] = boardTxt.Read();
         }
     } 
