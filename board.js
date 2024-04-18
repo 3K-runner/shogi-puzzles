@@ -1,4 +1,4 @@
-const Kanji = num => {
+const pieces = (num => {
     switch (num) {
     case 9:  return [[" ", " "], 
                      ["歩", "と"], 
@@ -18,9 +18,15 @@ const Kanji = num => {
                      ["王", "玉"]];
     default: return [];
     };
-};
+})(BOARD_NUM);
 
-const pieces = Kanji(BOARD_NUM);
+const NOTATION_PIECES = (num => {
+    switch (num) {
+    case 5:  return ["psgbrk", "PSGBRK"];       
+    case 9:  return ["plnsgbrk", "PLNSGBRK"];
+    default: return ["", ""];
+    }
+})(BOARD_NUM);
 
 const makeTab = () => {
     let std_tab_var = [];
@@ -87,8 +93,13 @@ const FillHand = boardToUse => {
 }
 
 const setMate = (turn, mate) => {
-    const player = (turn == 0) ? "Gote" : "Sente";
-    const mateMessage = "Mate in " + mate.toString() + ": " + player + " to win";
+    let mateMessage = "";
+    if (mate == 0) {
+        mateMessage = "No mate";
+    } else {
+        const player = (turn == 0) ? "Gote" : "Sente";
+        mateMessage = "Mate in " + mate.toString() + ": " + player + " to win";
+    }
     document.getElementById("mate").textContent = mateMessage;
 }
 
@@ -101,36 +112,111 @@ const boardfile = () => ({
     },
 
     Read() {
-        const resp = this.file[this.count];
+        let resp = this.file[this.count];
         this.count++;
-        return Number(resp);
+        if (resp == "+") {
+            resp = resp + this.file[this.count];
+            this.count++;
+        }
+        return resp;
     }
 });
+
+const charIsNumber = char => {
+    const numbers = [..."0123456789"];
+    for (let i = 0; i < numbers.length; i++) {
+        if (char == numbers[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const getPlayerPiece = char => {
+    for (let turn = 0; turn < 2; turn++) {
+        for (let i = 0; i < NOTATION_PIECES[turn].length; i++) {
+            if (char == NOTATION_PIECES[turn][i]) return [i + 1, turn];
+        }
+    }
+    return [0, 0];
+}
 
 const setBoard = boardstr => board => {
     let boardTxt = boardfile();
     boardTxt.Add(boardstr);
 
-    let buff = 0;
-    for (let i = 0; i < 2; i++) {
-        if (boardTxt.Read() == 0) continue;
-        board.hand[i][0] = 1;
-        for (let j = 1; j < pieces.length - 1; j++) {
-            board.hand[i][j] = boardTxt.Read();
-        }
-    } 
+    let countBlanks = 0;
+    let buffer = "";
+    let piece = [0, 0];
     for (let i = 0; i < BOARD_NUM; i++) {
         for (let j = 0; j < BOARD_NUM; j++) {
-            buff = boardTxt.Read();
-            if (buff == 0) continue;
+            if (countBlanks > 0) {
+                countBlanks--;
+                continue;
+            }
 
-            board.tab[i][j][0] = buff
-            board.tab[i][j][1] = boardTxt.Read();
-            board.tab[i][j][2] = boardTxt.Read();
+            buffer = boardTxt.Read();
+            if (buffer.length == 2) {
+                piece = getPlayerPiece(buffer[1]);
+                board.tab[i][j][2] = 1;
+            } else {
+                if (charIsNumber(buffer)) {
+                    countBlanks = Number(buffer);
+                    j--;
+                    continue
+                }
+                if (buffer == "/") {
+                    j--;
+                    continue;
+                }
+
+                piece = getPlayerPiece(buffer);
+                board.tab[i][j][2] = 0;
+            }
+            board.tab[i][j][0] = piece[0];
+            board.tab[i][j][1] = piece[1];
         }
     }
-    board.turn = boardTxt.Read();
-    const mate = boardTxt.Read();
+    
+    buffer = boardTxt.Read();
+    if (buffer == " ") buffer = boardTxt.Read();
+    board.turn = (buffer == "w") ? 0 : 1; 
+    boardTxt.Read();
+
+    let mate = 0;
+    buffer = boardTxt.Read();
+    if (charIsNumber(buffer)) {
+        mate = Number(buffer);
+        buffer = boardTxt.Read();
+        if (buffer == undefined) {
+            board.mate = (mate == 0) ? 0 : (mate * 2 - 1);
+            return ;
+        }
+        piece = getPlayerPiece(buffer);
+        board.hand[piece[1]][0] = 1;
+        board.hand[piece[1]][piece[0]] = mate;
+
+        buffer = boardTxt.Read();
+    }
+    for (let i = 0; buffer != " "; i++) {
+        let qt = 1;
+        if (charIsNumber(buffer)) {
+            qt = Number(buffer);
+            buffer = boardTxt.Read();
+        }
+        piece = getPlayerPiece(buffer);
+        board.hand[piece[1]][0] = 1;
+        board.hand[piece[1]][piece[0]] = qt;
+
+        buffer = boardTxt.Read();
+    } 
+    
+    buffer = boardTxt.Read();
+    if (buffer == undefined) {
+        board.mate = -1;
+        return ;
+    }
+    mate = Number(buffer);
     board.mate = (mate == 0) ? 0 : (mate * 2 - 1);
 }
 
@@ -146,18 +232,17 @@ const run = boardstr => {
     setMate(board.turn, board.mate);
 }
 
-let boardstr = "101000200200000060011041100000041110000002006105105000011";
+let boardstr = "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1";
 
-//01010004110400310000021060010000005106105010031000010114
-//01100000000600211300004002100100005110006103000400510014
-//101000200200000060011041100000041110000002006105105000011
-
-//shortest plausible str: 00000000000000000000000000000
+//+B1bG1/3Sk/p4/RK+r2/G3+p b S 4
+//4k/+Sg2b/S1p2/+R3K/g1bR1 b P 4
+//4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1
+//B1bG1/3Sk/p4/RK+r2/G3+p b 5
 
 run(boardstr);
 
 const onlyAllowedChars = char => {
-    const allowedChar = [..."1234567890"];
+    const allowedChar = [...("1234567890" + NOTATION_PIECES[0] + NOTATION_PIECES[1] + "bw+/ ")];
     const checkfunc = (result, element) => result || (char == element);
     return allowedChar.reduce(checkfunc, false);
 }
@@ -178,5 +263,3 @@ const getInputStr = element => {
     run(verifyInputStr(str));
 }
 document.getElementById("input").addEventListener("submit", getInputStr);
-
-//B1bG1/3Sk/p4/RK+r2/G3+p_b_-_1
