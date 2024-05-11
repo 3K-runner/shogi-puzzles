@@ -93,10 +93,8 @@ const FillHand = boardToUse => {
 }
 
 const setMate = (turn, mate) => {
-    let mateMessage = "";
-    if (mate == 0) {
-        mateMessage = "No mate";
-    } else {
+    let mateMessage = "No mate";
+    if (mate > 0) {
         const player = (turn == 0) ? "Gote" : "Sente";
         mateMessage = "Mate in " + mate.toString() + ": " + player + " to win";
     }
@@ -178,45 +176,32 @@ const setBoard = boardstr => board => {
         }
     }
     
-    buffer = boardTxt.Read();
-    if (buffer == " ") buffer = boardTxt.Read();
-    board.turn = (buffer == "w") ? 0 : 1; 
+    boardTxt.Read();
+    board.turn = (boardTxt.Read() == "w") ? 0 : 1; 
     boardTxt.Read();
 
-    let mate = 0;
     buffer = boardTxt.Read();
-    if (charIsNumber(buffer)) {
-        mate = Number(buffer);
-        buffer = boardTxt.Read();
-        if (buffer == undefined) {
-            board.mate = (mate == 0) ? 0 : (mate * 2 - 1);
-            return ;
-        }
-        piece = getPlayerPiece(buffer);
-        board.hand[piece[1]][0] = 1;
-        board.hand[piece[1]][piece[0]] = mate;
-
-        buffer = boardTxt.Read();
-    }
-    for (let i = 0; buffer != " "; i++) {
-        let qt = 1;
-        if (charIsNumber(buffer)) {
-            qt = Number(buffer);
-            buffer = boardTxt.Read();
-        }
-        piece = getPlayerPiece(buffer);
-        board.hand[piece[1]][0] = 1;
-        board.hand[piece[1]][piece[0]] = qt;
-
-        buffer = boardTxt.Read();
-    } 
+    if (buffer != "-") {
+        for (let i = 0; buffer != " "; i++) {
+            let qt = 1;
+            if (charIsNumber(buffer)) {
+                qt = Number(buffer);
+                buffer = boardTxt.Read();
+            }
+            piece = getPlayerPiece(buffer);
+            board.hand[piece[1]][0] = 1;
+            board.hand[piece[1]][piece[0]] = qt;
     
+            buffer = boardTxt.Read();
+        } 
+    } else boardTxt.Read();
+
     buffer = boardTxt.Read();
     if (buffer == undefined) {
-        board.mate = -1;
+        board.mate = 0;
         return ;
     }
-    mate = Number(buffer);
+    let mate = Number(buffer);
     board.mate = (mate == 0) ? 0 : (mate * 2 - 1);
 }
 
@@ -237,12 +222,12 @@ let boardstr = "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1";
 //+B1bG1/3Sk/p4/RK+r2/G3+p b S 4
 //4k/+Sg2b/S1p2/+R3K/g1bR1 b P 4
 //4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1
-//B1bG1/3Sk/p4/RK+r2/G3+p b 5
+//B1bG1/3Sk/p4/RK+r2/G3+p b - 5
 
 run(boardstr);
 
 const onlyAllowedChars = char => {
-    const allowedChar = [...("1234567890" + NOTATION_PIECES[0] + NOTATION_PIECES[1] + "bw+/ ")];
+    const allowedChar = [...("1234567890" + NOTATION_PIECES[0] + NOTATION_PIECES[1] + "bw+/- ")];
     const checkfunc = (result, element) => result || (char == element);
     return allowedChar.reduce(checkfunc, false);
 }
