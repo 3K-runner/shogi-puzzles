@@ -148,10 +148,6 @@ const setBoard = boardstr => board => {
     let piece = [0, 0];
     for (let i = 0; i < BOARD_NUM; i++) {
         for (let j = 0; j < BOARD_NUM; j++) {
-            if (countBlanks > 0) {
-                countBlanks--;
-                continue;
-            }
 
             buffer = boardTxt.Read();
             if (buffer.length == 2) {
@@ -159,8 +155,7 @@ const setBoard = boardstr => board => {
                 board.tab[i][j][2] = 1;
             } else {
                 if (charIsNumber(buffer)) {
-                    countBlanks = Number(buffer);
-                    j--;
+                    j += Number(buffer) - 1;
                     continue
                 }
                 if (buffer == "/") {
@@ -217,12 +212,21 @@ const run = boardstr => {
     setMate(board.turn, board.mate);
 }
 
-let boardstr = "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1";
+//Puzzles for 5x5 shogi (mini shogi)
+const MADE_PUZZLES = [
+    "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1",
+    "+B1bG1/3Sk/p4/RK+r2/G3+p b S 4",
+    "4k/+Sg2b/S1p2/+R3K/g1bR1 b P 4",
+    "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1",
+    "B1bG1/3Sk/p4/RK+r2/G3+p b - 5",
+    "1b2k/4p/pB3/1Kr2/1G3 b sSGR 5",
+    "1Gbk1/2g1s/p1S2/5/1K2R b PBR 4",
+    "3kb/3P1/1s1G1/2g1K/5 w psb2r 5",
+    "3p1/4k/BgssG/5/K3+p w b2r 4",
+    "1rggk/2R2/1B2p/P1K2/1+sS1b w - 4"
+];
 
-//+B1bG1/3Sk/p4/RK+r2/G3+p b S 4
-//4k/+Sg2b/S1p2/+R3K/g1bR1 b P 4
-//4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1
-//B1bG1/3Sk/p4/RK+r2/G3+p b - 5
+let boardstr = MADE_PUZZLES[Math.floor(Math.random() * (MADE_PUZZLES.length - 1))];
 
 run(boardstr);
 
