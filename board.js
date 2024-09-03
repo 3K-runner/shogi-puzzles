@@ -77,14 +77,24 @@ const FillBoard = boardToUse => {
 
 const handId = turn => "hand" + turn.toString();
 
+const SOT_NUM = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
+const NumToSOT = num => {
+    let str = "";
+    while (num > 0) {
+        str = SOT_NUM[num%10] + str;
+        num = Math.floor(num / 10);
+    }
+    return str;
+};
+
 const FillHand = boardToUse => {
     for (let i = 0; i < 2; i++) {
         let handstr = "";
         if (boardToUse.hand[i][0] != 0) {
             for (let j = 1; j < pieces.length - 1; j++) {
-                let numhand = boardToUse.hand[i][j];
+                const numhand = boardToUse.hand[i][j];
                 if (numhand == 0) continue;
-                handstr = handstr + numhand.toString() + pieces[j][0] + " ";
+                handstr = handstr + NumToSOT(numhand) + pieces[j][0] + " ";
             }
         }
 
@@ -120,54 +130,35 @@ const boardfile = () => ({
     }
 });
 
-const charIsNumber = char => {
-    const numbers = [..."0123456789"];
-    for (let i = 0; i < numbers.length; i++) {
-        if (char == numbers[i]) {
-            return true;
-        }
-    }
-    return false;
-}
+const charIsNumber = char => !isNaN(Number(char));
 
-const getPlayerPiece = char => {
+const getPlayerPiece = (char, pro=0) => {
     for (let turn = 0; turn < 2; turn++) {
         for (let i = 0; i < NOTATION_PIECES[turn].length; i++) {
-            if (char == NOTATION_PIECES[turn][i]) return [i + 1, turn];
+            if (char == NOTATION_PIECES[turn][i]) return [i + 1, turn, pro];
         }
     }
-    return [0, 0];
+    return [0, 0, 0];
 }
 
 const setBoard = boardstr => board => {
     let boardTxt = boardfile();
     boardTxt.Add(boardstr);
 
-    let countBlanks = 0;
     let buffer = "";
-    let piece = [0, 0];
     for (let i = 0; i < BOARD_NUM; i++) {
         for (let j = 0; j < BOARD_NUM; j++) {
 
             buffer = boardTxt.Read();
-            if (buffer.length == 2) {
-                piece = getPlayerPiece(buffer[1]);
-                board.tab[i][j][2] = 1;
-            } else {
-                if (charIsNumber(buffer)) {
-                    j += Number(buffer) - 1;
-                    continue
-                }
-                if (buffer == "/") {
-                    j--;
-                    continue;
-                }
+            if (buffer == "/") buffer = boardTxt.Read();
+            if (charIsNumber(buffer)) {
+                j += Number(buffer) - 1;
+                continue
+            } 
 
-                piece = getPlayerPiece(buffer);
-                board.tab[i][j][2] = 0;
-            }
-            board.tab[i][j][0] = piece[0];
-            board.tab[i][j][1] = piece[1];
+            board.tab[i][j] = buffer.length > 1 
+            ? getPlayerPiece(buffer[1], 1)
+            : getPlayerPiece(buffer);
         }
     }
     
@@ -183,7 +174,7 @@ const setBoard = boardstr => board => {
                 qt = Number(buffer);
                 buffer = boardTxt.Read();
             }
-            piece = getPlayerPiece(buffer);
+            let piece = getPlayerPiece(buffer);
             board.hand[piece[1]][0] = 1;
             board.hand[piece[1]][piece[0]] = qt;
     

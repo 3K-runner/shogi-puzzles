@@ -5,8 +5,6 @@ const tileId = (num1, num2) => "tile" + num1.toString() + num2.toString();
 const NumberToPx = num => num.toString() + "px";
 const PxToNumber = str => Number(str.slice(0, -2));
 
-// Takes a value as a stringed number with px as unit 
-//and operates it acording to a function and a given number
 const operatePX = str => func => num2 => NumberToPx(func(PxToNumber(str), num2));
 
 
@@ -50,10 +48,11 @@ const SetRootVar = () => {
     root.style.setProperty("--board-size", boardSize);
 
     const tileBorderSize = getComputedStyle(root).getPropertyValue("--border-width");
-    const tileSize = operatePX(boardSize)(dimension(2.1 * PxToNumber(tileBorderSize)))(BOARD_NUM);
+    //the 2.005 is to consider the limitation in the precision
+    const tileSize = operatePX(boardSize)(dimension(2.005 * PxToNumber(tileBorderSize)))(BOARD_NUM);
     root.style.setProperty("--tile-size", tileSize);
 
-    const handWidth = operatePX(tileSize)(multi)(BOARD_NUM - 1);
+    const handWidth = operatePX(boardSize)(dimension(2 * PxToNumber(tileBorderSize)))(1);
     root.style.setProperty("--hand-width", handWidth);
 
     const fontSize = operatePX(tileSize)(multi)(0.55);
