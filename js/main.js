@@ -1,5 +1,3 @@
-const BOARD_NUM = 5;
-
 const tileId = (num1, num2) => "tile" + num1.toString() + num2.toString();
 
 const NumberToPx = num => num.toString() + "px";
@@ -8,8 +6,7 @@ const PxToNumber = str => Number(str.slice(0, -2));
 const operatePX = str => func => num2 => NumberToPx(func(PxToNumber(str), num2));
 
 
-const div = (num1, num2) => num1 / num2;
-
+const div   = (num1, num2) => num1 / num2;
 const multi = (num1, num2) => num1 * num2;
 
 const dimension = offset => (num1, num2) => (num1 / num2) - offset;

@@ -1,33 +1,3 @@
-const pieces = (num => {
-    switch (num) {
-    case 9:  return [[" ", " "], 
-                     ["歩", "と"], 
-                     ["香", "杏"], 
-                     ["桂", "圭"], 
-                     ["銀", "全"], 
-                     ["金", "金"], 
-                     ["角", "馬"], 
-                     ["飛", "竜"], 
-                     ["王", "玉"]];
-    case 5:  return [[" ", " "], 
-                     ["歩", "と"], 
-                     ["銀", "全"], 
-                     ["金", "金"], 
-                     ["角", "馬"], 
-                     ["飛", "竜"], 
-                     ["王", "玉"]];
-    default: return [];
-    };
-})(BOARD_NUM);
-
-const NOTATION_PIECES = (num => {
-    switch (num) {
-    case 5:  return ["psgbrk", "PSGBRK"];       
-    case 9:  return ["plnsgbrk", "PLNSGBRK"];
-    default: return ["", ""];
-    }
-})(BOARD_NUM);
-
 const makeTab = () => {
     let std_tab_var = [];
     for (let i = 0; i < BOARD_NUM; i++) {
@@ -43,7 +13,7 @@ const makeHand = () => {
     let std_hand_var = [];
     for (let i = 0; i < 2; i++) {
         std_hand_var[i] = [];
-        for (let j = 0; j < pieces.length - 1; j++) {
+        for (let j = 0; j < PIECES.length - 1; j++) {
             std_hand_var[i][j] = 0;
         }
     }
@@ -65,8 +35,8 @@ const FillBoard = boardToUse => {
             const piece = boardToUse.tab[i][j];
             let tile = document.getElementById(tileId(i, j) + "t");
             
-            const turn_or_pro = (piece[0] == (pieces.length - 1)) ? 1 : 2;
-            tile.textContent = pieces[piece[0]][piece[turn_or_pro]];
+            const turn_or_pro = (piece[0] == (PIECES.length - 1)) ? 1 : 2;
+            tile.textContent = PIECES[piece[0]][piece[turn_or_pro]];
             if (piece[0] == 0) continue;
             
             tile.style.transform = (piece[1] == 0) ? "rotate(180deg)" : "" ;
@@ -91,10 +61,10 @@ const FillHand = boardToUse => {
     for (let i = 0; i < 2; i++) {
         let handstr = "";
         if (boardToUse.hand[i][0] != 0) {
-            for (let j = 1; j < pieces.length - 1; j++) {
+            for (let j = 1; j < PIECES.length - 1; j++) {
                 const numhand = boardToUse.hand[i][j];
                 if (numhand == 0) continue;
-                handstr = handstr + NumToSOT(numhand) + pieces[j][0] + " ";
+                handstr = handstr + NumToSOT(numhand) + PIECES[j][0] + " ";
             }
         }
 
@@ -111,6 +81,8 @@ const setMate = (turn, mate) => {
     document.getElementById("mate").textContent = mateMessage;
 }
 
+//----------------------------------
+
 const boardfile = () => ({
     file: "",
     count: 0,
@@ -126,11 +98,12 @@ const boardfile = () => ({
             resp = resp + this.file[this.count];
             this.count++;
         }
+
+        //todo: read numbers with more than one digit
+
         return resp;
     }
 });
-
-const charIsNumber = char => !isNaN(Number(char));
 
 const getPlayerPiece = (char, pro=0) => {
     for (let turn = 0; turn < 2; turn++) {
@@ -151,7 +124,7 @@ const setBoard = boardstr => board => {
 
             buffer = boardTxt.Read();
             if (buffer == "/") buffer = boardTxt.Read();
-            if (charIsNumber(buffer)) {
+            if (strIsNumber(buffer)) {
                 j += Number(buffer) - 1;
                 continue
             } 
@@ -170,7 +143,7 @@ const setBoard = boardstr => board => {
     if (buffer != "-") {
         for (let i = 0; buffer != " "; i++) {
             let qt = 1;
-            if (charIsNumber(buffer)) {
+            if (strIsNumber(buffer)) {
                 qt = Number(buffer);
                 buffer = boardTxt.Read();
             }
@@ -203,43 +176,28 @@ const run = boardstr => {
     setMate(board.turn, board.mate);
 }
 
-//Puzzles for 5x5 shogi (mini shogi)
-const MADE_PUZZLES = [
-    "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1",
-    "+B1bG1/3Sk/p4/RK+r2/G3+p b S 4",
-    "4k/+Sg2b/S1p2/+R3K/g1bR1 b P 4",
-    "4k/P+B3/3+Bp/4s/KRr2 b 2Gs 1",
-    "B1bG1/3Sk/p4/RK+r2/G3+p b - 5",
-    "1b2k/4p/pB3/1Kr2/1G3 b sSGR 5",
-    "1Gbk1/2g1s/p1S2/5/1K2R b PBR 4",
-    "3kb/3P1/1s1G1/2g1K/5 w psb2r 5",
-    "3p1/4k/BgssG/5/K3+p w b2r 4",
-    "1rggk/2R2/1B2p/P1K2/1+sS1b w - 4"
-];
-
 let boardstr = MADE_PUZZLES[Math.floor(Math.random() * (MADE_PUZZLES.length - 1))];
 
 run(boardstr);
 
-const onlyAllowedChars = char => {
-    const allowedChar = [...("1234567890" + NOTATION_PIECES[0] + NOTATION_PIECES[1] + "bw+/- ")];
-    const checkfunc = (result, element) => result || (char == element);
-    return allowedChar.reduce(checkfunc, false);
-}
-
-const verifyInputStr = str => {
-    if (str == "0") return [];
-
-    const clean_str = [...str].filter(onlyAllowedChars);
-    if (clean_str.length > 0) {
-        boardstr = clean_str;
-    }
-    return boardstr
-}
-
+let input_error = "";
 const getInputStr = element => {
     element.preventDefault();
-    const str = element.currentTarget.Input.value;
-    run(verifyInputStr(str));
+    const tag = element.currentTarget.Input;
+    const str = tag.value;
+
+    if (str == "0") { run(DEFAULT_POSITION); return; }
+
+    const error_message = IsValidSfen(str);
+    const is_sfen_valid = (error_message == "");
+
+    if (!is_sfen_valid) console.log("Error on input: " + error_message);
+
+    tag.style.color = is_sfen_valid ? "#00AA00" : "#AA0000";
+    setTimeout(() => { tag.style.color = "#000000"}, 1000)
+    
+    if (!is_sfen_valid) return;
+
+    run(str);
 }
 document.getElementById("input").addEventListener("submit", getInputStr);
